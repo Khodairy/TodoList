@@ -8,167 +8,48 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { TodosContext } from "../UseContext/todoContext";
-import Dialog from "@mui/material/Dialog";
-import Button from "@mui/material/Button";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
+// import { ToastContext } from "../UseContext/toastContext";
+import { useToast } from "../UseContext/toastContext";
 
-export default function TodoInfo(props) {
+export default function TodoInfo({ todo, ShowDeleteDialog, ShowEditeDialog }) {
   const { todos, setTodos } = useContext(TodosContext);
+  // const { handleSnakBar } = useContext(ToastContext);
+  const { handleSnakBar } = useToast();
 
   // ==== Done Button =====
-
   function handlerDoneBtn() {
     const updateTodos = todos.map((t) => {
-      if (t.id === props.todo.id) {
-        t.isCompleted = !t.isCompleted;
+      if (t.id === todo.id) {
+        if (t.isCompleted) {
+          t.isCompleted = !t.isCompleted;
+          handleSnakBar("تم الأضافة للمهام الغير منجزة");
+        } else {
+          t.isCompleted = !t.isCompleted;
+          handleSnakBar("تمت الأضافة للمهام المنجزة");
+        }
       }
       return t;
     });
     localStorage.setItem("todos", JSON.stringify(updateTodos));
     setTodos(updateTodos);
-    if (props.todo.isCompleted) {
-      // playSound(); // Play sound when done button is clicked
-    } else if (!props.todo.isCompleted) {
-      // playFalseSound();
+    if (todo.isCompleted) {
+    } else if (!todo.isCompleted) {
     }
   }
 
-  // ==== Delete Dialog =====
-
-  const [open, setOpen] = useState(false);
-
-  const handleOpenDeleteDialog = () => {
-    setOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setOpen(false);
-  };
-
-  function handleDeleteConfirm() {
-    const updateTodos = todos.filter((t) => {
-      return t.id !== props.todo.id;
-    });
-    localStorage.setItem("todos", JSON.stringify(updateTodos));
-    setTodos(updateTodos);
-    setOpen(false);
+  // =========== Delete Dialog ============
+  function handleDeleteDialog() {
+    ShowDeleteDialog(todo);
   }
-
-  // ==== Edit Dialog =====
-
-  const [openE, setOpenE] = useState(false);
-  const [updateDailog, setUpdateDailog] = useState({
-    title: props.todo.title,
-    details: props.todo.details,
-  });
-
-  const handleOpenEditDialog = () => {
-    setOpenE(true);
-  };
-
-  const handleSubmit = () => {
-    const updateTodos = todos.map((t) => {
-      if (t.id === props.todo.id) {
-        return {
-          ...t,
-          title: updateDailog.title,
-          details: updateDailog.details,
-        };
-      }
-      return t;
-    });
-    localStorage.setItem("todos", JSON.stringify(updateTodos));
-    setTodos(updateTodos);
-    setOpenE(false);
-  };
+  // =========== Edite Dialog ============
+  function hadnleEditeDialog() {
+    ShowEditeDialog(todo);
+  }
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        style={{ direction: "rtl" }}
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"هل انت متأكد من رغبتك في حذف المهمة؟"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            لا يمكنك التراجع عن الحذف بعد اتمامة
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>اغلاق</Button>
-          <Button onClick={handleDeleteConfirm} autoFocus>
-            نعم قم بالحذف
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={openE}
-        onClose={() => {
-          setOpenE(false);
-        }}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        style={{ direction: "rtl" }}
-      >
-        <DialogTitle id="alert-dialog-title">{"تعديل المهمة"}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            id="title"
-            name="title"
-            label="العنوان"
-            type="text"
-            fullWidth
-            variant="standard"
-            value={updateDailog.title}
-            onChange={(event) => {
-              setUpdateDailog({ ...updateDailog, title: event.target.value });
-            }}
-          />
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            id="details"
-            name="details"
-            label="التفاصيل"
-            type="text"
-            fullWidth
-            variant="standard"
-            value={updateDailog.details}
-            onChange={(event) => {
-              setUpdateDailog({ ...updateDailog, details: event.target.value });
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setOpenE(false);
-            }}
-          >
-            اغلاق
-          </Button>
-          <Button onClick={handleSubmit} autoFocus>
-            تعديل
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       <Card
         className="card"
         sx={{ minWidth: 275 }}
@@ -189,15 +70,13 @@ export default function TodoInfo(props) {
                   variant="h6"
                   component="div"
                   style={{
-                    textDecoration: props.todo.isCompleted
-                      ? "line-through"
-                      : "none",
+                    textDecoration: todo.isCompleted ? "line-through" : "none",
                   }}
                 >
-                  {props.todo.title}
+                  {todo.title}
                 </Typography>
                 <Typography variant="body1" component="div">
-                  {props.todo.details}
+                  {todo.details}
                 </Typography>
               </Grid>
               <Grid item xs={4}>
@@ -217,11 +96,9 @@ export default function TodoInfo(props) {
                     size="large"
                     style={{
                       marginLeft: "10px",
-                      color: props.todo.isCompleted ? "white" : "#8bc34a",
+                      color: todo.isCompleted ? "white" : "#8bc34a",
                       border: "1px solid #8bc34a",
-                      backgroundColor: props.todo.isCompleted
-                        ? "#8bc34a"
-                        : "white",
+                      backgroundColor: todo.isCompleted ? "#8bc34a" : "white",
                     }}
                     onClick={handlerDoneBtn}
                   >
@@ -237,7 +114,7 @@ export default function TodoInfo(props) {
                       border: "1px solid #1769aa",
                       backgroundColor: "white",
                     }}
-                    onClick={handleOpenEditDialog}
+                    onClick={hadnleEditeDialog}
                   >
                     <CreateOutlinedIcon />
                   </IconButton>
@@ -251,7 +128,7 @@ export default function TodoInfo(props) {
                       border: "1px solid #b23c17",
                       backgroundColor: "white",
                     }}
-                    onClick={handleOpenDeleteDialog}
+                    onClick={handleDeleteDialog}
                   >
                     <DeleteOutlinedIcon />
                   </IconButton>
