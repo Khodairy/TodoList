@@ -7,7 +7,7 @@ import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import TodoInfo from "./todoInfo";
 import { useTodos } from "../UseContext/todoContext";
 import { useToast } from "../UseContext/toastContext";
@@ -40,24 +40,6 @@ export default function TodoList() {
     setInputField(""); // مسح حقل الإدخال بعد الإضافة
     handleSnakBar("تم اضافة مهمة جديدة بنجاح");
   };
-
-  // ToggleButton handler
-  const handlerTypeOfArray = (event, newValue) => {
-    if (newValue !== null) {
-      setTypeOfArray(newValue);
-    }
-  };
-
-  // فلترة المهام
-  const completed = todos.filter((t) => t.isCompleted);
-  const notCompleted = todos.filter((t) => !t.isCompleted);
-
-  const todosRender =
-    typeOfArray === "completed"
-      ? completed
-      : typeOfArray === "notCompleted"
-      ? notCompleted
-      : todos;
 
   let [dialogTodo, setDialogTodo] = useState(null);
   // ==== Delete Dialog =====
@@ -104,6 +86,33 @@ export default function TodoList() {
     setOpenE(false);
     handleSnakBar("تم التعديل  بنجاح");
   };
+
+  // ToggleButton handler
+  const handlerTypeOfArray = (event, newValue) => {
+    if (newValue !== null) {
+      setTypeOfArray(newValue);
+    }
+  };
+
+  // فلترة المهام
+
+  // ====== Appling useMemo() =======
+  const completed = useMemo(() => {
+    return todos.filter((t) => {
+      return t.isCompleted;
+    });
+  }, [todos]);
+
+  const notCompleted = useMemo(() => {
+    return todos.filter((t) => !t.isCompleted);
+  }, [todos]);
+
+  const todosRender =
+    typeOfArray === "completed"
+      ? completed
+      : typeOfArray === "notCompleted"
+      ? notCompleted
+      : todos;
 
   const todoItems = todosRender.map((e) => (
     <div key={e.id}>
