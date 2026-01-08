@@ -8,34 +8,26 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
-import { useContext } from "react";
-import { TodosContext } from "../UseContext/todoContext";
-// import { ToastContext } from "../UseContext/toastContext";
 import { useToast } from "../UseContext/toastContext";
+import { useTodos } from "../UseContext/todoContext";
 
 export default function TodoInfo({ todo, ShowDeleteDialog, ShowEditeDialog }) {
-  const { todos, setTodos } = useContext(TodosContext);
+  const { dispatch } = useTodos();
   // const { handleSnakBar } = useContext(ToastContext);
   const { handleSnakBar } = useToast();
 
   // ==== Done Button =====
   function handlerDoneBtn() {
-    const updateTodos = todos.map((t) => {
-      if (t.id === todo.id) {
-        if (t.isCompleted) {
-          t.isCompleted = !t.isCompleted;
-          handleSnakBar("تم الأضافة للمهام الغير منجزة");
-        } else {
-          t.isCompleted = !t.isCompleted;
-          handleSnakBar("تمت الأضافة للمهام المنجزة");
-        }
-      }
-      return t;
-    });
-    localStorage.setItem("todos", JSON.stringify(updateTodos));
-    setTodos(updateTodos);
+    if (typeof dispatch !== "function") {
+      console.error("dispatch is not a function in handlerDoneBtn", dispatch);
+      handleSnakBar("خطأ داخلي: الرجاء إعادة تحميل الصفحة");
+      return;
+    }
+    dispatch({ type: "updating", payload: { id: todo.id, isCompleted: !todo.isCompleted } });
     if (todo.isCompleted) {
-    } else if (!todo.isCompleted) {
+      handleSnakBar("تم الأضافة للمهام الغير منجزة");
+    } else {
+      handleSnakBar("تمت الأضافة للمهام المنجزة");
     }
   }
 

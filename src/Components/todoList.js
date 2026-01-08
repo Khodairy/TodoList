@@ -7,11 +7,9 @@ import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import { v4 as uuidv4 } from "uuid";
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import TodoInfo from "./todoInfo";
-import { TodosContext } from "../UseContext/todoContext";
-// import { ToastContext } from "../UseContext/toastContext";
+import { useTodos } from "../UseContext/todoContext";
 import { useToast } from "../UseContext/toastContext";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -23,18 +21,13 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 export default function TodoList() {
-  const { todos, setTodos } = useContext(TodosContext);
+  const { todos, dispatch } = useTodos();
+
   // const { handleSnakBar } = useContext(ToastContext);
   const { handleSnakBar } = useToast();
 
   const [inputField, setInputField] = useState("");
   const [typeOfArray, setTypeOfArray] = useState("all");
-
-  // تحميل الـ todos من localStorage عند أول Render
-  useEffect(() => {
-    const storageTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
-    setTodos(storageTodos);
-  }, [setTodos]);
 
   // حفظ أي تحديث على todos تلقائيًا
   useEffect(() => {
@@ -43,16 +36,8 @@ export default function TodoList() {
 
   const handleButtonClick = () => {
     if (inputField.trim() === "") return; // منع إضافة مهمة فارغة
-
-    const newTodo = {
-      id: uuidv4(),
-      title: inputField.trim(),
-      details: "",
-      isCompleted: false,
-    };
-    setTodos([...todos, newTodo]);
+    dispatch({ type: "added", payload: { newTitle: inputField } });
     setInputField(""); // مسح حقل الإدخال بعد الإضافة
-
     handleSnakBar("تم اضافة مهمة جديدة بنجاح");
   };
 
@@ -88,11 +73,7 @@ export default function TodoList() {
   };
 
   function handleDeleteConfirm() {
-    const updateTodos = todos.filter((t) => {
-      return t.id !== dialogTodo.id;
-    });
-    localStorage.setItem("todos", JSON.stringify(updateTodos));
-    setTodos(updateTodos);
+    dispatch({ type: "deleted", payload: { id: dialogTodo.id } });
     setOpen(false);
     handleSnakBar("تم الحذف  بنجاح");
   }
@@ -112,19 +93,14 @@ export default function TodoList() {
   };
 
   const handleSubmit = () => {
-    if (!dialogTodo) return;
-    const updateTodos = todos.map((t) => {
-      if (t.id === dialogTodo.id) {
-        return {
-          ...t,
-          title: updateDailog.title,
-          details: updateDailog.details,
-        };
-      }
-      return t;
+    dispatch({
+      type: "updating",
+      payload: {
+        id: dialogTodo.id,
+        title: updateDailog.title,
+        details: updateDailog.details,
+      },
     });
-    localStorage.setItem("todos", JSON.stringify(updateTodos));
-    setTodos(updateTodos);
     setOpenE(false);
     handleSnakBar("تم التعديل  بنجاح");
   };
