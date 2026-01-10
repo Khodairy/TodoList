@@ -63,7 +63,7 @@ This project was a deep dive into React to implement and master:
 1. Clone the repository:
 
 ```bash
-git clone [https://github.com/Khodairy/todoList.git](https://github.com/Khodairy/todoList.git)
+git clone https://github.com/Khodairy/todoList.git
 ```
 
 2. **Navigate to the project directory:**
